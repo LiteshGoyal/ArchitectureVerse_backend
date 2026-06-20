@@ -12,3 +12,12 @@ class Project(models.Model):
     
     def __str__(self):
         return self.name
+    
+    
+class ProjectCollaborator(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="collaborators")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ("project","user")

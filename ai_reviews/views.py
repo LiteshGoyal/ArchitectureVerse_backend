@@ -10,6 +10,7 @@ from uuid import uuid4
 from projects.models import Project
 from .models import (ChatMessage,ChatSession, ArchitectureReview)
 from .serializers import ChatMessageSerializer, ArchitectureReviewSerializer
+from projects.utils import (get_project_for_user)
 
 class ReviewArchitectureView(APIView):
     permission_classes=[IsAuthenticated]
@@ -30,9 +31,7 @@ class ReviewArchitectureView(APIView):
         """
         
         response = (client.models.generate_content(model="gemini-2.5-flash",contents=prompt,))
-        project = Project.objects.get(
-          id=request.data.get("project_id"),owner = request.user
-        )
+        project = get_project_for_user(request.data.get("project_id"),request.user)
         
         ArchitectureReview.objects.create(project=project, content=response.text)
         
@@ -132,7 +131,7 @@ class ArchitectureChatView(APIView):
     Answer specifically based on the provided architecture and dont keep the answer too long.
     """
     
-    project = Project.objects.get(id=request.data.get("project_id"), owner = request.user)
+    project = get_project_for_user(request.data.get("project_id"),request.user)
     
     session, _ = (ChatSession.objects.get_or_create(project=project))
     
@@ -152,7 +151,7 @@ class ChatHistoryView(APIView):
   permission_classes=[IsAuthenticated]
   
   def get(self, request, project_id):
-    project = ( Project.objects.get(id=project_id, owner=request.user))
+    project = get_project_for_user(project_id,request.user)
     
     session = (ChatSession.objects.filter(project=project).first())
     
@@ -213,10 +212,7 @@ class ReviewHistoryView(APIView):
         project_id
     ):
 
-        project = Project.objects.get(
-            id=project_id,
-            owner=request.user
-        )
+        project = get_project_for_user(project_id,request.user)
 
         reviews = (
             project.reviews

@@ -4,12 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 
 from projects.models import Project
 from .models import Diagram, SharedDiagram
+from projects.utils import get_project_for_user
 
 class DiagramView(APIView):
     permission_classes=[IsAuthenticated]
     
     def get(self, request, project_id):
-        project = Project.objects.get(id=project_id, owner=request.user)
+        project = get_project_for_user(project_id,request.user)
         
         diagram, created = Diagram.objects.get_or_create(
             project=project,
@@ -26,7 +27,7 @@ class DiagramView(APIView):
         )
         
     def put(self, request, project_id):
-        project = Project.objects.get(id=project_id, owner = request.user)
+        project = get_project_for_user(project_id,request.user)
         
         diagram, created = Diagram.objects.get_or_create(project=project)
         
